@@ -6,15 +6,54 @@ format: html
 
 ## Header 1
 
-```{r}
-#| label: setup
+```{r setup}
 #| include: false
 
 library(tidyverse)
+library(here)
+library(snakecase)
 ```
 
-Can write normal text here.
+## Importing raw data
+
+First we need to import the csv data. Use the package readr that is part of tidyverse
+
+here() is my project location ("/home/ztml/LearnR3"). If I move the project to another PC. I don't have to rewrite everytime I have used a path.
+
+I add show_col_types = F for avoid innecessary output regarding the delimiter of the csv file. 
 
 ```{r}
-# Code chunk
+here("data-raw/nurses-stress/stress/5C/5C_1586886626/HR.csv.gz") |>
+  read_csv(show_col_types = FALSE)
+```
+
+Notice that the collumn names are in PascalCase (no spaces, uppercase...). We want snake_case.We use the function to_snake_case() from the snakecase package, as an argument for name_repair
+
+I add n_max for the future data that I will import, that might be big and I don't want to load it all when I am only playing with the data.
+
+```{r}
+here("data-raw/nurses-stress/stress/5C/5C_1586886626/HR.csv.gz") |>
+  read_csv(
+    show_col_types = FALSE,
+    name_repair = to_snake_case,
+    n_max = 100
+  )
+```
+
+
+## Exercise: Reading other files
+
+```{r}
+here("data-raw/nurses-stress/stress/6B/6B_1587569373/HR.csv.gz") |>
+  read_csv(
+    name_repair = to_snake_case,
+    n_max = 100
+  )
+
+here("data-raw/nurses-stress/stress/6B/6B_1587569373/EDA.csv.gz") |>
+  read_csv(
+    name_repair = to_snake_case,
+    n_max = 100,
+    show_col_types = F
+  )
 ```
