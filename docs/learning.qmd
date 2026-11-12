@@ -1,6 +1,6 @@
 ---
-title: "Draft Quarto document"
-author: "Your Name"
+title: "Learning document: Intermediate Reproducible Research in R"
+author: "Maite Jiménez Lozano"
 format: html
 ---
 
@@ -12,6 +12,8 @@ format: html
 library(tidyverse)
 library(here)
 library(snakecase)
+
+source(here("R/functions.R"))
 ```
 
 ## Importing raw data
@@ -57,3 +59,88 @@ here("data-raw/nurses-stress/stress/6B/6B_1587569373/EDA.csv.gz") |>
     show_col_types = F
   )
 ```
+
+## Import 5C's HR data with a function
+
+```{r}
+read <- function(file_path) {
+  data <- file_path |>
+    read_csv(
+      show_col_types = FALSE,
+      name_repair = to_snake_case,
+      n_max = 100
+    )
+  return(data)
+}
+```
+
+Now to test it:
+
+```{r}
+here("data-raw/nurses-stress/stress/5C/5C_1586886626/HR.csv.gz") |>
+  read()
+```
+Now adding Roxygen documentation:
+
+```{r, eval=FALSE}
+#' read()
+#' Opens a file from a path, snake_cases columns. Max rows: 100
+#' @param file_path Path to the data file
+#'
+#' @returns Outputs a data frame
+#'
+
+read <- function(file_path) {
+  data <- file_path |>
+    read_csv(
+      show_col_types = FALSE,
+      name_repair = to_snake_case,
+      n_max = 100
+    )
+  return(data)
+}
+```
+
+```{r}
+here("data-raw/nurses-stress/stress/5C/5C_1586886712/HR.csv.gz") |>
+  read()
+```
+
+## Making function reusable
+
+When someone needs one of our functions, they need to have installed the packages we are using. We add these packages in the DESCRIPTION file. Using the following lines:
+
+```{r, eval=FALSE}
+usethis::use_package("here")
+usethis::use_package("tidyverse", type = "Depends") # requires to add it to depends otherwise gives an error
+```
+
+Good practice is to add before the function, the package where it comes from + ::. Then I can remove it from the setup chunk library()
+
+```{r, eval=FALSE}
+#' Read in one nurses' stress data file
+#'
+#' @param file_path Path to the data file
+#' @param max_rows Maximum numbers of rows to read
+#'
+#' @returns Outputs a data frame/tibble
+#' 
+read <- function(file_path, max_rows = 100) {
+  data <- file_path |>
+    readr::read_csv(
+      show_col_types = FALSE,
+      name_repair = snakecase::to_snake_case,
+      n_max = max_rows
+    )
+  return(data)
+}
+```
+
+Adding more packages to the description
+
+```{r, eval=FALSE}
+usethis::use_package("readr")
+usethis::use_package("snakecase")
+```
+
+Good practice is to move the function to the functions.R file once it works. And delete it from the markdown so that it doesn't become long
